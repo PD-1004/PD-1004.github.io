@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>掌心向暖 | 微信文案乱序修复工具2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #07C160;
+            --secondary-color: #576B95;
+            --text-color: #333;
+            --light-gray: #F7F7F7;
+            --border-color: #E7E7E7;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f4f7f6;
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 20px;
+            flex-grow: 1;
+            /* 桌面端布局顺序 */
+            grid-template-areas:
+                "left-sidebar main-content right-sidebar"
+                "footer footer footer";
+        }
+
+        /* 移动端布局调整 */
+        @media (max-width: 1200px) {
+            body {
+                padding: 10px; /* 移动端内边距更小 */
+            }
+            .main-container {
+                grid-template-columns: 1fr; /* 单列布局 */
+                gap: 15px; /* 间距更小 */
+                /* 移动端布局顺序：主体内容优先，然后是推广信息和推荐阅读 */
+                grid-template-areas:
+                    "main-content"
+                    "left-sidebar"
+                    "right-sidebar"
+                    "footer";
+            }
+            /* 移动端侧边栏不再是固定定位，而是作为网格项目正常显示 */
+            .left-sidebar, .right-sidebar {
+                position: static; /* 移除 sticky，确保在文档流中 */
+                top: auto;
+                transform: none; /* 移除隐藏变换 */
+                visibility: visible; /* 确保可见 */
+                opacity: 1; /* 确保不透明 */
+                transition: none; /* 移除过渡效果 */
+                z-index: auto; /* 移除高 z-index */
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* 移动端也保留阴影 */
+                background: white; /* 恢复白色背景 */
+                backdrop-filter: none; /* 移除毛玻璃效果 */
+                -webkit-backdrop-filter: none;
+                height: auto; /* 高度自适应内容 */
+                padding: 20px;
+                overflow-y: auto; /* 允许侧边栏内容滚动 */
+                border-radius: 12px; /* 恢复圆角 */
+            }
+        }
+
+        /* 将 grid area 应用到对应的元素 */
+        .left-sidebar { grid-area: left-sidebar; }
+        .main-content { grid-area: main-content; }
+        .right-sidebar { grid-area: right-sidebar; }
+        .footer { grid-area: footer; }
+
+        /* 移除侧边栏切换按钮的样式，因为它不再需要 */
+        .sidebar-toggle-btn {
+            display: none !important; /* 强制隐藏 */
+        }
+
+        /* 左侧栏 - 公众号信息 */
+        .left-sidebar, .right-sidebar, .main-content, .footer {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 防止内容溢出，内部元素自行滚动 */
+        }
+        
+        /* 侧边栏内容滚动 */
+        .left-sidebar .account-info,
+        .left-sidebar .resources,
+        .right-sidebar .articles-section {
+            overflow-y: auto; /* 让这些内部区域可以滚动 */
+            flex-shrink: 0; /* 避免这些内容被压缩 */
+            padding-right: 10px; /* 留出滚动条空间 */
+        }
+        .left-sidebar .resources,
+        .right-sidebar .articles-section {
+            flex-grow: 1; /* 允许其在有空间时增长 */
+        }
+
+        .account-info {
+            margin-bottom: 25px;
+        }
+
+        .account-info h3, .resources h3, .articles-section h3 {
+            font-size: 16px;
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .qrcode {
+            width: 100%;
+            max-width: 200px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 5px;
+            background-color: white;
+            margin-bottom: 15px;
+        }
+
+        /* 中间栏 - 核心工具 */
+        .main-content {
+            padding: 25px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            color: #666;
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.6; /* 桌面端保持原有行间距 */
+        }
+
+        /* 移动端优化：缩小行间距 */
+        @media (max-width: 768px) {
+            .header p {
+                line-height: 1.3; /* 移动端缩小行间距 */
+            }
+        }
+
+        .text-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex-grow: 1;
+            min-height: 0; /* Important for flex-grow within a flex container */
+        }
+
+        @media (max-width: 768px) {
+            .text-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .text-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .section-title:before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: var(--primary-color);
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px; /* 初始高度稍减，但允许 flex-grow */
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            resize: vertical;
+            flex-grow: 1;
+            margin-bottom: 15px;
+            min-height: 100px; /* 最小高度，防止过小 */
+        }
+
+        /* 按钮样式 */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background-color: #06AD56;
+        }
+
+        .secondary-btn {
+            background-color: #F2F2F2;
+            color: #666;
+        }
+
+        .secondary-btn:hover {
+            background-color: #E5E5E5;
+        }
+
+        /* 右侧栏 - 推荐阅读 */
+        .resources {
+            margin-bottom: 25px;
+        }
+
+        .resource-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .resource-list li {
+            margin-bottom: 10px;
+        }
+
+        .resource-link {
+            display: block;
+            padding: 8px 12px;
+            background-color: var(--light-gray);
+            border-radius: 6px;
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .resource-link:hover {
+            background-color: #E5E5E5;
+        }
+
+        /* 文章推荐区域 */
+        .articles-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            flex-grow: 1;
+            overflow-y: auto; /* 允许文章列表滚动 */
+            padding-right: 10px; /* 留出滚动条空间 */
+        }
+
+        .article-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            display: block;
+            text-decoration: none;
+        }
+
+        .article-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .article-cover {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .article-content {
+            padding: 12px;
+        }
+
+        .article-content h4 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        .article-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #666;
+            font-size: 13px;
+            margin-top: 20px;
+            flex-shrink: 0;
+        }
+
+        .footer .brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .footer .brand-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="left-sidebar" id="leftSidebar">
+            <div class="account-info">
+                <h3>公众号信息</h3>
+                <img src="https://image.lolimi.cn/2025/07/19/687a7b331d8a9.jpg" alt="掌心向暖微信二维码" class="qrcode">
+                <p>👆关注公众号获取最新版</p>
+                <p>👨🏻‍💻专注RPA&AI自动化分享</p>
+                <p>🎖️开发者微信：PD-1104</p>
+            </div>
+
+            <div class="resources">
+                <h3>产品/资源</h3>
+                <ul class="resource-list">
+                    <li><a href="https://z5ps8ery5v.feishu.cn/wiki/O7zBwOziSiH8k0kS85lcMQ9Gnjg?fromScene=spaceOverview" target="_blank" class="resource-link">📖 「掌心 · 产品清单」</a></li>
+                    <li><a href="https://z5ps8ery5v.feishu.cn/wiki/XSwywlE1jiSgjKkMJNzcVWaknfc?fromScene=spaceOverview" target="_blank" class="resource-link">✨ 「掌心 · 黑科技工具箱」</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>2025微信文案乱序修复工具</h1>
+                <p>
+                    复制别人微信朋友圈或群里的文案时，<br>
+                    有时候文字排序是颠倒错乱的<br>
+                    可以用此工具清理隐藏的控制字符，还原文案
+                </p>
+            </div>
+
+            <div class="text-columns">
+                <div class="text-section">
+                    <div class="section-title">原始微信文案</div>
+                    <textarea id="inputText" placeholder="在此粘贴原始微信文案"></textarea>
+                    <div class="button-group">
+                        <button class="primary-btn" onclick="pasteText()">粘贴内容</button>
+                        <button class="secondary-btn" onclick="clearText()">清除内容</button>
+                    </div>
+                </div>
+
+                <div class="text-section">
+                    <div class="section-title">修复结果</div>
+                    <textarea class="output-container" id="output" placeholder="修复后的结果将显示在这里"></textarea>
+                    <div class="button-group">
+                        <button class="primary-btn" onclick="processText()">修复文案</button>
+                        <button class="secondary-btn" onclick="copyOutput()">复制结果</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-sidebar" id="rightSidebar">
+            <div class="articles-section">
+                <h3>热门文章推荐</h3>
+                <div class="article-grid">
+                    <a href="https://mp.weixin.qq.com/s/FoCSs2QIVxtDw2hx3YToQg" target="_blank" class="article-card">
+                        <img src="https://image.lolimi.cn/2025/07/19/687b22cc59cab.jpg" alt="文章封面" class="article-cover">
+                        <div class="article-content">
+                            <h4>掌心出品 | 值得你一个 "好看" 的浏览器书签管理方案 | 全网知乎小红书高赞回答</h4>
+                            <p>四年沉淀，上百次迭代打造的一份良心管理方案</p>
+                        </div>
+                    </a>
+                    <a href="https://mp.weixin.qq.com/s/IouD8WV1CD7DjZzD62ghyg" target="_blank" class="article-card">
+                        <img src="https://image.lolimi.cn/2025/07/19/687b22cdea303.jpg" alt="文章封面" class="article-cover">
+                        <div class="article-content">
+                            <h4>不会编程的我开发了一款近900行指令的自动化RPA应用，完美解决98％以上复制受限的飞书文档！！</h4>
+                            <p>复制受限的飞书文档扒不下来？看我如何保存为本地Word，该项目持续维护中……</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="brand">
+                <img src="https://image.lolimi.cn/2025/07/19/687a7b5b3119a.jpg" alt="掌心向暖公众号Logo" class="brand-logo">
+                <span>该服务由 <b>公众号：掌心向暖</b> 主理人开发</span>
+            </div>
+            <p>微信：PD-1104 | 由 AI 助手生成 | Version 1.0</p>
+        </div>
+    </div>
+
+    <script>
+        // 修复文案功能
+        function processText() {
+            const inputText = document.getElementById('inputText').value;
+            let restoredText = '';
+
+            const controlChars = new Set(['\u202d', '\u202e', '\u202c']);
+            let resultChars = [];
+            let reverseBuffer = [];
+            let inRloMode = false;
+
+            for (let i = 0; i < inputText.length; i++) {
+                const char = inputText[i];
+                if (char === '\u202e') { // RIGHT-TO-LEFT OVERRIDE (RLO)
+                    inRloMode = true;
+                    reverseBuffer = [];
+                } else if (char === '\u202c' || char === '\u202d') { // PDF or LRO
+                    if (inRloMode) {
+                        resultChars.push(...reverseBuffer.reverse());
+                        inRloMode = false;
+                        reverseBuffer = [];
+                    }
+                } else if (controlChars.has(char)) {
+                    continue;
+                } else {
+                    if (inRloMode) {
+                        reverseBuffer.push(char);
+                    } else {
+                        resultChars.push(char);
+                    }
+                }
+            }
+
+            if (inRloMode && reverseBuffer.length > 0) {
+                resultChars.push(...reverseBuffer.reverse());
+            }
+
+            restoredText = resultChars.join('');
+            document.getElementById('output').value = restoredText;
+        }
+
+        function clearText() {
+            document.getElementById('inputText').value = '';
+            document.getElementById('output').value = '';
+        }
+
+        function pasteText() {
+            navigator.clipboard.readText()
+                .then(text => {
+                    document.getElementById('inputText').value = text;
+                })
+                .catch(err => {
+                    console.error('无法读取剪贴板:', err);
+                    alert('请手动粘贴或检查浏览器权限设置');
+                });
+        }
+
+        function copyOutput() {
+            const outputText = document.getElementById('output').value;
+            if (outputText && outputText !== '修复后的结果将显示在这里' && outputText !== '') {
+                navigator.clipboard.writeText(outputText)
+                    .then(() => {
+                        alert('已复制到剪贴板！');
+                    })
+                    .catch(err => {
+                        console.error('复制失败:', err);
+                        alert('复制失败，请手动复制！');
+                    });
+            } else {
+                alert('没有可复制的文案。');
+            }
+        }
+    </script>
+</body>
+</html>
